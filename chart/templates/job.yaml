@@ -1,0 +1,35 @@
+{{ range .Values.volumes -}}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: longhorn-volume-manager-{{ .appName }}-{{ .volumeName }}
+  namespace: {{ .namespace | default $.Values.namespace | default $.Release.Namespace }}
+spec:
+  template:
+    spec:
+      automountServiceAccountToken: false
+      restartPolicy: Never
+      containers:
+        - name: longhorn-volume-manager-{{ .appName }}-{{ .volumeName }}
+          image: barthodev/longhorn-volume-manager-image:{{ $.Chart.AppVersion }}
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: "256Mi"
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: APP_NAME
+              value: "{{ required "Each volume definition must have a `appName` property" .appName }}"
+            - name: VOLUME_NAME
+              value: "{{ required "Each volume definition must have a `volumeName` property" .volumeName }}"
+            - name: VOLUME_SIZE
+              value: "{{ .volumeSize | default "1" }}"
+            - name: VOLUME_ACCESS_MODE
+              value: "{{ .volumeAccessMode | default "rwo" }}"
+            - name: LONGHORN_URL
+              value: http://longhorn-frontend.longhorn/v1
+{{ end -}}

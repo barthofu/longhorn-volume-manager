@@ -1,0 +1,8 @@
+longhornUrl: http://longhorn-frontend.longhorn/v1
+
+volumes:
+  - appName: longhorn-volume-manager-test
+    volumeName: data
+    volumeSize: 1
+    volumeAccessMode: rwo
+    namespace: default
